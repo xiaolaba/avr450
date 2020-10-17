@@ -1,8 +1,7 @@
-<<<<<<< HEAD
-=======
+
 # avr450
 
->>>>>>> d1f0bc79a5488f7fa7e80c8a04a6a10eccc8d096
+
 ## how to assemble the asm files.
 Ubuntu 20.04, install AVRA first and then 'make all' 
 ```
@@ -16,8 +15,7 @@ make clean
 make all
 
 ```
-<<<<<<< HEAD
-=======
+
 
 
 
@@ -36,4 +34,4 @@ it is a reference design for li-polymer battery charging with code/hardware desi
 [SI4425, P-MOS](SI4425_P-MOS.pdf)  
 
 [LSM345_Schottky_diode](LSM345_MicrosemiCorporation.pdf)
->>>>>>> d1f0bc79a5488f7fa7e80c8a04a6a10eccc8d096
+
