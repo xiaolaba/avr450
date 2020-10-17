@@ -6,4 +6,6 @@ this is collection from the internet, however do not remember where pulled.
 
 it is a reference design for li-polymer battery charging with code/hardware design.  
 
-![avr450_tiny15.JPG](avr450_tiny15.JPG)
+![avr450_tiny15.JPG](avr450_tiny15.JPG)  
+
+![tiny_charger.JPG](tiny_charger.JPG)  
