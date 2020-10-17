@@ -1,0 +1,668 @@
+
+AVRA   Ver. 1.3.0 nimh.asm Sun Oct 18 00:13:53 2020
+
+
+         
+         ;  Last change:  JB    00/07/11 (YY/MM/DD)
+          
+         ;**************************** MODULE INFO  *******************************
+         ;
+         ;   File name   :  nimh.asm
+         ;   AUTHOR      :  Atmel
+         ;   VERSION     :  1.2
+         ;   DATE        :  July 10th 2000
+         ;
+         ;   Compiler    :  Atmel AVR Assembler 1.30
+         ;   Contents    :  Travel Battery Charger Reference Design with ATtiny15
+         ;		   - Battery specific functions:
+         ;                  - fast_charge
+         ;                  - trickle_charge
+         ;   Options:
+         ;	- Watchdog timer 
+         ;	- No battery detection
+         ;
+         ;   Please send comments on this code to avr@atmel.com
+         ;
+         ;	Change log
+         ;	V1.1		JB	Changed fast I_fast measurement to measure without gain
+         ;								
+         ;	V1.2		JB	Fixed bug when stopping PWM output
+         
+         ;*************************[ Included Define Files ]***********************
+         ; Define files included here 
+         
+          .include	"tn15def.inc"
+         ;***************************************************************************
+         ;* A P P L I C A T I O N   N O T E   F O R   T H E   A V R   F A M I L Y
+         ;* 
+         ;* Number           :AVR000
+         ;* File Name        :"tn15def.inc"
+         ;* Title            :Register/Bit Definitions for the ATtiny15
+         ;* Date             :99.07.05
+         ;* Version          :1.00
+         ;* Support E-mail   :avr@atmel.com
+         ;* Target MCU       :ATtiny15
+         ;*
+         ;* DESCRIPTION
+         ;* When including this file in the assembly program file, all I/O register  
+         ;* names and I/O register bit names appearing in the data book can be used.
+         ;* In addition, the six registers forming the three data pointers X, Y and
+         ;* Z have been assigned names XL - ZH. Highest RAM address for Internal 
+         ;* SRAM is also defined 
+         ;*
+         ;* The Register names are represented by their hexadecimal address.
+         ;* 
+         ;* The Register Bit names are represented by their bit number (0-7).
+         ;* 
+         ;* Please observe the difference in using the bit names with instructions
+         ;* such as "sbr"/"cbr" (set/clear bit in register) and "sbrs"/"sbrc" 
+         ;* (skip if bit in register set/cleared). The following example illustrates
+         ;* this:
+         ;* 
+         ;* in   r16,PORTB       ;read PORTB latch
+         ;* sbr  r16,(1<<PB6)+(1<<PB5)   ;set PB6 and PB5 (use masks, not bit#)
+         ;* out  PORTB,r16       ;output to PORTB
+         ;*
+         ;* in   r16,TIFR        ;read the Timer Interrupt Flag Register
+         ;* sbrc r16,TOV0        ;test the overflow flag (use bit#)
+         ;* rjmp TOV0_is_set     ;jump if set
+         ;* ...              ;otherwise do something else
+         ;***************************************************************************
+         
+         ;***** Specify Device
+          .device ATtiny15
+         
+         ;***** I/O Register Definitions
+          .equ    SREG    =$3f
+          .equ    GIMSK   =$3b
+          .equ    GIFR    =$3a
+          .equ    TIMSK   =$39
+          .equ    TIFR    =$38
+          .equ    MCUCR   =$35
+          .equ    MCUSR   =$34
+          .equ    TCCR0   =$33
+          .equ    TCNT0   =$32
+          .equ    OSCCAL  =$31
+          .equ    TCCR1   =$30
+          .equ    TCNT1   =$2f
+          .equ    OCR1A   =$2e
+          .equ    OCR1B   =$2d
+          .equ    SFIOR   =$2c
+          .equ    WDTCR   =$21
+          .equ    EEAR    =$1e
+          .equ    EEDR    =$1d
+          .equ    EECR    =$1c
+          .equ    PORTB   =$18
+          .equ    DDRB    =$17
+          .equ    PINB    =$16
+          .equ    ACSR    =$08
+          .equ    ADMUX   =$07
+          .equ    ADCSR   =$06
+          .equ    ADCH    =$05
+          .equ    ADCL    =$04
+         
+         
+         ;***** Bit Definitions
+          .equ    INT0    =6
+          .equ    PCIE    =5
+         
+          .equ    INTF0   =6
+          .equ    PCIF    =5
+         
+          .equ    OCIE1   =6
+          .equ    TOIE1   =2
+          .equ    TOIE0   =1
+         
+          .equ    OCF1    =6
+          .equ    TOV1    =2
+          .equ    TOV0    =1
+         
+          .equ    PUD     =6
+          .equ    SE      =5
+          .equ    SM      =4
+          .equ    SM1     =4
+          .equ    SM0     =3
+          .equ    ISC01   =1
+          .equ    ISC00   =0
+         
+          .equ    WDRF    =3
+          .equ    BORF    =2
+          .equ    EXTRF   =1
+          .equ    PORF    =0
+         
+          .equ    CS02    =2
+          .equ    CS01    =1
+          .equ    CS00    =0
+         
+          .equ    CAL7    =7
+          .equ    CAL6    =6
+          .equ    CAL5    =5
+          .equ    CAL4    =4
+          .equ    CAL3    =3
+          .equ    CAL2    =2
+          .equ    CAL1    =1
+          .equ    CAL0    =0
+         
+          .equ    CTC1    =7
+          .equ    PWM1    =6
+          .equ    COM11   =5
+          .equ    COM10   =4
+          .equ    CS13    =3
+          .equ    CS12    =2
+          .equ    CS11    =1
+          .equ    CS10    =0
+         
+          .equ    FOCM    =2
+          .equ    PSR1    =1
+          .equ    PSR0    =0
+         
+          .equ    WDTOE   =4
+          .equ    WDE     =3
+          .equ    WDP2    =2
+          .equ    WDP1    =1
+          .equ    WDP0    =0
+         
+          .equ    EERIE   =3
+          .equ    EEMWE   =2
+          .equ    EEWE    =1
+          .equ    EERE    =0
+         
+          .equ    PB4     =4
+          .equ    PB3     =3
+          .equ    PB2     =2
+          .equ    PB1     =1
+          .equ    PB0     =0
+         
+          .equ    DDB5    =5
+          .equ    DDB4    =4
+          .equ    DDB3    =3
+          .equ    DDB2    =2
+          .equ    DDB1    =1
+          .equ    DDB0    =0
+         
+          .equ    PINB5   =5
+          .equ    PINB4   =4
+          .equ    PINB3   =3
+          .equ    PINB2   =2
+          .equ    PINB1   =1
+          .equ    PINB0   =0
+         
+          .equ    ACD     =7
+          .equ    ACO     =5
+          .equ    ACI     =4
+          .equ    ACIE    =3
+          .equ    ACIS1   =1
+          .equ    ACIS0   =0
+         
+          .equ    REFS1   =7
+          .equ    REFS0   =6
+          .equ    ADLAR   =5
+          .equ    MUX2    =2
+          .equ    MUX1    =1
+          .equ    MUX0    =0
+         
+          .equ    ADEN    =7
+          .equ    ADSC    =6
+          .equ    ADFR    =5
+          .equ    ADIF    =4
+          .equ    ADIE    =3
+          .equ    ADPS2   =2
+          .equ    ADPS1   =1
+          .equ    ADPS0   =0
+         
+          .def    ZL      =r30
+          .def    ZH      =r31
+         
+          .equ    INT0addr=$001   ;External Interrupt0 Vector Address
+          .equ    PCINTaddr=$002  ;Pin change Interrupt Vector Address
+          .equ    T1COMPaddr=$003 ;Timer1 Compare match interrupt vector address
+          .equ    OVF1addr=$004   ;Overflow 1 Interrupt Vector Address
+          .equ    OVF0addr=$005   ;Overflow 1 Interrupt Vector Address
+          .equ    EERDYaddr =$006 ;EEPROM Interrupt Vector Address
+          .equ    ACIaddr =$007   ;Analog Comparator Interrupt Vector Address
+          .equ    ADCCaddr =$008  ;ADC Interrupt Vector Address
+          .include   	"bc.inc" 
+         
+         ;  Last change:  JB    00/07/11 (YY/MM/DD)
+         
+         ;**************************** MODULE INFO  *******************************
+         ;
+         ;   File name   :  BC.INC
+         ;   AUTHOR      :  Atmel
+         ;   VERSION     :  1.2
+         ;   DATE        :  July 10th 2000
+         ;
+         ;   Compiler    :  Atmel AVR Assembler 1.30
+         ;   Contents    :  Header file for Travel Charger Reference Design
+         ;
+         
+         
+         ;*************************[ Charger  Characteristics ]********************
+         
+          .equ	sec_duration		= 6	; 1 Second (#Timer0 Overflow Interrupts)
+          .equ	min_duration		= 61	; ~1 Minute (1.6 MHz = 59,965 sec)
+         ;.equ	min_duration		= 6	; ~1 Minute (1.6 MHz = 6 sec), debug
+         
+          .equ	avg_loop_cnt		= 4	; ADC Measurement Average Loop Count
+         								; NOTE! Count = (1<<avr_loop_cnt) !!!
+         
+         ;*************************[ Hardware Assignments ]************************
+         
+          .equ	PWM_PIN			= PB1	; PWM pin
+         
+          .equ	ADC_T_channel		=0x41	; Battery Temperature Channel
+          .equ	ADC_I_channel		=0x42	; Battery Current Channel
+          .equ	ADC_V_channel		=0x43	; Battery Voltage Channel
+         
+          .equ	ADC_offset_channel	=0x44	; ADC Offset Channel
+          .equ	ADC_g_offset_channel	=0x45	; ADC gain Offset Channel
+          .equ	ADC_diff_channel	=0x46	; ADC Diff Channel
+          .equ	ADC_gain_channel	=0x47	; ADC gain Channel
+         
+         ;*************************[ Register Assignments ]************************
+         
+          .def	SREG_Storage		=r1	; Temporary Storage During Interrupts
+         
+          .def	av_l			=r5	; Average Low Byte (ADC Measurement)
+          .def	av_h			=r6	; Average High Byte (ADC Measurement)
+          .def	last_min_Vl		=r10	; Last minute Voltage Low Byte
+          .def	last_min_Vh		=r11	; Last minute Voltage High Byte
+          .def	last_min_Tl		=r12	; Last minute Temperature Low Byte
+          .def	last_min_Th		=r13	; Last minute Temperature High Byte
+          .def	last_t_min		=r14	; Last minute tick counter
+         
+          .def	temp			=r16	; Temporary Storage Register 1
+          .def	temp2			=r17	; Temporary Storage Register 2
+          .def	tick_cnt		=r18	; Tick Counter
+          .def	t_sec			=r19	; Time_seconds
+          .def	t_min			=r20	; Time_minutes
+          .def	control			=r21	; Charge control register
+          .def	Vl			=r22	; Voltage Low Byte
+          .def	Vh			=r23	; Voltage High Byte
+          .def	Il			=r24	; Current Low Byte
+          .def	Ih			=r25	; Current High Byte
+          .def	Tl			=r26	; Temperature Low Byte
+          .def	Th			=r27	; Temperature High Byte
+          .def	chargel			=r28	; Temp variable, used only in Liion
+          .def	chargeh			=r29	; Temp variable, used only in Liion
+         
+         
+         ;*************************[ Charge Control ]******************************
+         
+          .equ	NO_PWM			=0x01
+          .include 	"nimh.inc"
+         
+         ;  Last change:  JB    00/07/11 (YY/MM/DD)
+         
+         ;**************************** MODULE INFO  *******************************
+         ;
+         ;   File name   :  nicd.inc
+         ;   AUTHOR      :  Atmel
+         ;   VERSION     :  1.2
+         ;   DATE        :  July 10th 2000
+         ;
+         ;   Compiler    :  Atmel AVR Assembler 1.30
+         ;   Contents    :  Header file for NiCD.asm, containing the battery
+         ;                  specific definitions, functions and subroutines
+         ;                   
+         ;
+         ;                   capacity * R16_17 * AD_resolution      
+         ;   I_fast      =   _____________________________________
+         ;                   R18 * (R8_9 + R16_17) * V_ref_voltage
+         ;                   
+         ;
+         ;                   cell_voltage * cells * R16_17 * AD_resolution
+         ;   max_V_Fast  =   _____________________________________________
+         ;                   (R8_9 + R16_17) * V_ref_voltage                   
+         ;
+         ;                   
+         ;   I_trickle   =   I_fast/40
+         ;
+         ;                    20mV * cells * R16_17 * AD_resolution
+         ;   neg_dV  	=    _____________________________________________
+         ;                   (R8_9 + R16_17) * V_ref_voltage                   
+         
+         
+         ;*************************[ Battery Characteristics ]*********************
+         ;Modify these values according to battery datasheet
+         
+          .equ	cells			= 1		; number of cells in the battery pack
+         
+          .equ    capacity        	= 750  		; battery pack capacity in mAh
+         
+          .equ 	cell_voltage    	= 1500 		; cell voltage 1500mV
+         
+          .equ    AD_ref_voltage  	= 3670      ; A/D Converter reference voltage, 3670mV
+          .equ    AD_resolution   	= 1024      ; A/D converter resolution, 10-bit, 1024 steps
+          
+          .equ    min_T_abs       	= 0x02C7    ; Termination Temperature = 5 C
+          .equ    max_T_abs   	    = 0x0175    ; Termination Temperature = 40 C
+         
+          .equ    R8_9   		        = 0		    ; Scaling resistor R8 and R9 value (short circuit)
+          .equ    R16_17          	= 1		    ; Scaling resistor R17 and R18 value(open)
+          .equ    R18             	= 4         ; Current sense resistor value 1/4 ohm(0.25)
+         
+          .equ	max_time_fast		= 90		; Maximum Fast Charge Time = 1.5h
+          .equ	max_time_trickle	= 90		; Maximum Trickle Charge Time = 1.5h
+         
+         ;*************************[ Charge Conditions ]***************************
+         
+          .equ	I_fast				= 52		; See formula above for calculations, no gain stage used
+         
+         ; Trickle Charge Current
+          .equ	I_trickle			= 26 		;20 * I_fast/40, 20 x gain stage used
+         
+         ; Fast Charge Voltage Limit
+          .equ	max_V_fast			= 418		; See formula above for calculations
+         
+         ; Trickle Charge Voltage Limit
+          .equ	max_V_trickle		= 418 		; Max_V_trickle = max_V_fast
+         
+         ; Maximum temperature rise/min
+          .equ	delta_T				= 10		; 0.5 C/min
+         
+         ;************************ General charge termination *******************
+         
+         ; Fast charge termination       
+          .equ  	neg_dV      		= 6 		; -dV = 20 mV per cell 
+          
+         ;*************************[ Interrupt Vector Table ]**********************
+         ; Execution always starts here
+         
+          	.org 0x00
+C:000000 e005      	ldi			temp, 0x05
+C:000001 bf03       	out			TCCR0, temp				; TCNT0 CK/1024
+C:000002 e401       	ldi			temp, 0x41				; TCNT1 8-bit PWM @ 100 kHz
+C:000003 bf00       	out			TCCR1, temp				; output DISCONNECTED
+C:000004 c04c      	rjmp		fast_charge
+         
+          	.org OVF0addr
+         
+         ;*****************[ Timer 0 Overflow Interrupt Handler ]******************
+          Timer0_OVF_Int:
+C:000005 b61f      	in			SREG_Storage, SREG		; Store SREG Contents
+         
+C:000006 952a      	dec			tick_cnt				; Decrement tick Counter
+C:000007 f431      	brne		t0ovf_exit
+         	; This code is executed once a second	
+C:000008 e026      	ldi			tick_cnt, sec_duration	; Reset Tick Counter
+         	; *** Insert user code here (approx 1 second)
+C:000009 9533      	inc			t_sec					; Increment second counter
+C:00000a 333d      	cpi			t_sec, min_duration
+C:00000b f411      	brne		t0ovf_exit				; Test second overflow
+         	; This code is executed once a minute
+C:00000c 2733      	clr			t_sec					; Clear Second Counter
+         	; *** Insert user code here (approx 1 minute)
+C:00000d 9543      	inc			t_min					; Increment Minutes Counter
+         	
+          t0ovf_exit:
+C:00000e be1f      	out			SREG, SREG_Storage		; Restore SREG
+C:00000f 9518      	reti
+         
+         ;***********************[ PWM Control ]*********************************
+         ; Functions to start and stop PWM output
+          start_PWM:
+C:000010 e601       	ldi			temp, 0x61
+C:000011 bf00       	out			TCCR1, temp				; TCNT1 8-bit PWM @ 100 kHz
+C:000012 9508      	ret
+         
+          stop_PWM:
+C:000013 98c1      	cbi			PORTB, PWM_PIN			; Lock current to zero
+C:000014 9ab9      	sbi			DDRB, PWM_PIN			
+C:000015 e401      	ldi			temp, 0x41
+C:000016 bf00      	out			TCCR1, temp				; Disconnect PWM output
+C:000017 9508      	ret
+         
+         
+         ;*******************[ Fast Charge: Adjust Charge Current ]****************
+         ;  Function to Adjust Charge Current
+          adj_current:	
+C:000018 1780      	cp			Il, temp
+C:000019 0791      	cpc			Ih, temp2				; if( I = I_fast )
+C:00001a f061      	breq		adj_charge_end			; skip	
+C:00001b 1780      	cp			Il, temp
+C:00001c 0791      	cpc			Ih, temp2				; if( I < I_fast )
+C:00001d f428      	brsh		f_dec		
+         					
+          f_inc:	
+C:00001e b50e      	in			temp, OCR1A				; increment charge current
+C:00001f 5f0f      	subi		temp, 0xFF				; if( OCR1A < 0xFF )
+C:000020 f430      	brcc		adj_charge_end	
+C:000021 bd0e      	out			OCR1A, temp
+C:000022 c004      	rjmp		adj_charge_end			; Exit if limit value
+         
+          f_dec:	
+C:000023 b50e      	in			temp, OCR1A				; decrement charge current
+C:000024 5001      	subi		temp, 0x01				; if( OCR1A > 0x00 )
+C:000025 f008      	brcs		adj_charge_end
+C:000026 bd0e      	out			OCR1A, temp				; Exit if limit value
+          adj_charge_end:
+C:000027 9508      	ret
+         
+         	
+         ;*******************[function F_measure: Measure all Parameters ]***************
+         ; Measure Charge Parameters
+          f_measure:
+         
+C:000028 e403      	ldi			temp,ADC_V_channel		; Select Voltage Channel
+C:000029 d007      	rcall		convert_average			; Measure Battery Charge Voltage
+C:00002a 2d65      	mov			Vl, av_l
+C:00002b 2d76      	mov			Vh, av_h				; Record value
+         
+C:00002c e401      	ldi			temp,ADC_T_channel		; Select Temperature Channel
+C:00002d d003      	rcall		convert_average			; Measure Battery Temperature
+C:00002e 2da5      	mov			Tl, av_l
+C:00002f 2db6      	mov			Th, av_h				; Record value
+         
+         ;	ldi			temp,ADC_gain_channel	; Select Current Channel
+         ;	rcall		convert_average			; Measure Battery Current
+         ;	mov			Il, av_l
+         ;	mov			Ih, av_h				; Record value
+C:000030 9508      	ret
+         
+         	
+         ;*************************[ ADC Handler ]*********************************
+         ; This function measures the channel selected by [temp], and returns the 
+         ; converted value in [av_h:av_l]
+          convert_average:
+C:000031 b907      	out			ADMUX, temp				; Set ADC Channel
+C:000032 2455      	clr			av_l
+C:000033 2466      	clr			av_h					; Clear Average Registers
+C:000034 e110      	ldi			temp2,(1<<avg_loop_cnt) ; Set loop counter
+          convert_start:
+C:000035 ed04      	ldi		 	temp,0xD4
+C:000036 b906      	out			ADCSR,temp				; Start A/D Conversions
+          convert_wait:
+C:000037 9b34      	sbis		ADCSR, ADIF
+C:000038 cffe      	rjmp		convert_wait			; Wait for Conversion to finish
+C:000039 b104      	in			temp, ADCL
+C:00003a 0e50      	add			av_l, temp
+C:00003b b105      	in			temp, ADCH
+C:00003c 1e60      	adc			av_h, temp				; Add measured value to average
+C:00003d 951a      	dec			temp2
+C:00003e f7b1      	brne		convert_start			; Repeat (1<<avg_loop_cnt) times
+C:00003f e014      	ldi			temp2, avg_loop_cnt		; Set shift counter
+          convert_avg:	
+C:000040 9466      	lsr			av_h
+C:000041 9457      	ror			av_l					; av_h:av_l = av_h:av_l/2
+C:000042 951a      	dec			temp2
+C:000043 f7e1      	brne		convert_avg				; Repeat (avg_loop_cnt) times
+C:000044 9837      	cbi			ADCSR,ADEN
+C:000045 9508      	ret									; return to measure
+         
+         ;*******************[Check Temperature ]********************
+         ; checking temperature, terminate if outside range
+         
+          check_temperature:
+C:000046 e001      	ldi			temp, high(max_T_abs)
+C:000047 37a5      	cpi			Tl, low(max_T_abs)		; Temperature too high? (T_max)
+C:000048 07b0      	cpc			Th, temp
+C:000049 f028      	brlo		f_terminate_error		; Yes, terminate and flag error
+         	
+C:00004a e002      	ldi			temp, high(min_T_abs)
+C:00004b 3ca7      	cpi			Tl, low(min_T_abs)		; Temperature too low? (T_min)
+C:00004c 07b0      	cpc			Th, temp
+C:00004d f408      	brsh		f_terminate_error		; Yes, terminate and flag error
+C:00004e 9508      	ret
+         	
+         ;*******************[ Error handling ]***************************************
+         ; If error, the program ends up here
+         
+          f_terminate_error:
+C:00004f dfc3      	rcall		stop_PWM	
+          error_loop:
+C:000050 cfff      	rjmp		error_loop
+         
+         
+         ;*******************[ Fast Charge: Reset ]********************************
+         ; Start Fast Charge Cycle
+         ; Reset Charge Parameters
+          fast_charge:
+C:000051 e605      	ldi			temp, 0x65
+C:000052 bf0d      	out			0x3D, temp				; Initialize Stack (emulator only)
+C:000053 ef0f       	ldi			temp,0xFF
+C:000054 bd0d       	out 		OCR1B,temp
+C:000055 e002       	ldi			temp, 0x02
+C:000056 bf09       	out			TIMSK, temp				; Enable TCNT0 overflow interrupt
+C:000057 98c1        	cbi			PORTB, PWM_PIN			; Set Port B levels
+C:000058 9ab9        	sbi			DDRB, PWM_PIN			; Set Port B directions
+C:000059 e026      	ldi			tick_cnt, sec_duration	; Tick counter = 0
+C:00005a 24ee      	clr			last_t_min
+C:00005b 9478      	sei									; global interrupt enable
+C:00005c e040      	ldi			t_min, 0x00
+C:00005d e030      	ldi			t_sec, 0x00				; Reset Fast Charge Timer
+C:00005e bd3e      	out			OCR1A, t_sec			; Reset PWM counter
+         
+C:00005f dfb0      	rcall		start_PWM
+C:000060 dfc7      	rcall 		f_measure
+         
+         	
+         ;*******************[ Fast Charge: initialize temperature and voltage ]********
+          minute_init:
+C:000061 2ee4      	mov			last_t_min,t_min		; initialize values for checking every minute
+C:000062 2ea6      	mov			last_min_Vl,Vl
+C:000063 2eb7      	mov			last_min_Vh,Vh
+C:000064 2eca      	mov			last_min_Tl,Tl
+C:000065 2edb      	mov			last_min_Th,Th
+         	
+         ;*******************[ Fast Charge: Check Temperature ]********************
+          charge_loop:
+C:000066 dfc1      	rcall 		f_measure				; Measure battery
+C:000067 e406      	ldi			temp,ADC_diff_channel	; Select Current Channel
+C:000068 dfc8      	rcall		convert_average			; Measure Battery Current
+C:000069 2d85      	mov			Il, av_l
+C:00006a 2d96      	mov			Ih, av_h				; Record value
+         
+C:00006b dfda      	rcall		check_temperature
+         	
+         ;*******************[ Fast Charge: Check Voltage ]********************
+C:00006c e001      	ldi			temp, high(max_V_fast)
+C:00006d 3a62      	cpi			Vl, low(max_V_fast)
+C:00006e 0770      	cpc			Vh, temp				; if( V > max_V_fast )
+C:00006f f6f8      	brsh		f_terminate_error		; Yes, terminate and flag error
+         
+         ;*******************[ Fast Charge: Adjust Charge Current ]****************
+         ;  Load the charge current values and call the adjust charge current function
+         
+C:000070 e304      	ldi			temp,low(I_fast)
+C:000071 e010      	ldi			temp2,high(I_fast) 		; Load current value and adjust current 
+C:000072 dfa5      	rcall		adj_current
+         	
+         ;*******************[ Fast Charge: Timeout Test ]***********************
+         ; Check timeout value
+          f_terminate_test:
+C:000073 354a      	cpi			t_min, max_time_fast
+C:000074 f6d0      	brsh		f_terminate_error		; timeout (test minutes only)
+         
+         ;*******************[ Fast Charge: Minute loop ]***********************
+         
+C:000075 16e4      	cp			last_t_min,t_min		; Check for 60 sec overflow
+C:000076 f778      	brsh 		charge_loop				; If new minute
+         	
+         ;	cbi 		PORTB,PWM_PIN			; Included for debug with emulator
+         	
+C:000077 1aca      	sub			last_min_Tl,Tl			; Check for temperature change
+C:000078 0adb      	sbc			last_min_Th,Th	
+         		
+C:000079 e00a      	ldi			temp,low(delta_T)		; Load max temperature change value
+C:00007a e010      	ldi			temp2,high(delta_T)	
+C:00007b 1ac0      	sub			last_min_Tl,temp		; Terminate if temperature rise more than 1C/min
+C:00007c 0ad1      	sbc			last_min_Th,temp2
+C:00007d f444      	brge		f_terminate
+         	
+C:00007e 1aa6      	sub			last_min_Vl,Vl			; Subtract last minutes voltage
+C:00007f 0ab7      	sbc			last_min_Vh,Vh
+         	
+C:000080 e006      	ldi			temp,low(neg_dV)		; Check if voltage drops
+C:000081 e010      	ldi				temp2,high(neg_dV)
+C:000082 1aa0      	sub			last_min_Vl,temp
+C:000083 0ab1      	sbc			last_min_Vh,temp2
+C:000084 f40c      	brge		f_terminate
+         	
+C:000085 cfdb      	rjmp		minute_init				; Reload last minute values
+         		
+         ;*******************[ Fast Charge: Terminate ]****************************
+         ;  Terminate Fast Charge Cycle
+          f_terminate:
+C:000086 df8c      	rcall		stop_PWM				; Disable PWM Output
+         										; Continue with Trickle Charge
+         ;*******************[ Trickle Charge: Reset ]*****************************
+         ; Reset Charge Parameters
+C:000087 e000      	ldi			temp, 0x00
+C:000088 bd0e      	out			OCR1A, temp				; Minimum Duty Cycle
+         
+         ;*******************[ Trickle Charge: Measure all Parameters ]************
+         ; Measure Charge Parameters
+         
+C:000089 e040      	ldi			t_min, 0x00
+C:00008a e030      	ldi			t_sec, 0x00				; Reset Trickle Charge Timer
+C:00008b df84      	rcall		start_PWM				; Start PWM
+         
+         ;*******************[ Trickle Charge: Check Temperature ]*****************
+          t_charge_loop:
+C:00008c df9b      	rcall 		f_measure
+C:00008d e407      	ldi			temp,ADC_gain_channel	; Select Current Channel
+C:00008e dfa2      	rcall		convert_average			; Measure Battery Current
+C:00008f 2d85      	mov			Il, av_l
+C:000090 2d96      	mov			Ih, av_h				; Record value
+         
+C:000091 e405      	ldi			temp,ADC_g_offset_channel		; Select Current offset Channel
+C:000092 df9e      	rcall		convert_average			; Measure offset value
+C:000093 1985      	sub			Il, av_l				; Subtract offset from measured value
+C:000094 0996      	sbc			Ih, av_h
+C:000095 f412      	brpl		pos					
+C:000096 2788      	clr			Il						; Reset if negative value
+C:000097 2799      	clr			Ih
+C:000098 dfad      pos:rcall		check_temperature
+         
+         ;*******************[ Trickle Charge: Check Voltage ]*****************
+         
+C:000099 e001      	ldi			temp, high(max_V_trickle)
+C:00009a 3a62      	cpi			Vl, low(max_V_trickle)
+C:00009b 0770      	cpc			Vh, temp				; V>(max_V_fast)?
+C:00009c f430      	brsh		t_terminate_error		; Yes, terminate and flag error
+         
+         
+         ;*******************[ Trickle Charge: Adjust Charge Current ]*************
+         ;  Adjust Charge Current
+         
+C:00009d e10a      	ldi			temp, low(I_trickle)
+C:00009e e010      	ldi			temp2, high(I_trickle)
+C:00009f df78      	rcall		adj_current
+C:0000a0 cfeb      	rjmp		t_charge_loop
+         
+         ;*******************[ Trickle Charge: Check timeout ]*************
+         ;  Check timeout 
+C:0000a1 354a      	cpi			t_min, max_time_fast
+C:0000a2 f400      	brsh		t_terminate_error		; timeout (test minutes only)
+         	
+          t_terminate_error:
+C:0000a3 cfab      	rjmp		f_terminate_error
+
+
+Segment usage:
+   Code      :       164 words (328 bytes)
+   Data      :         0 bytes
+   EEPROM    :         0 bytes
+
+Assembly completed with no errors.
