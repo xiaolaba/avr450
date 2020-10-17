@@ -9,3 +9,7 @@ it is a reference design for li-polymer battery charging with code/hardware desi
 ![avr450_tiny15.JPG](avr450_tiny15.JPG)  
 
 ![tiny_charger.JPG](tiny_charger.JPG)  
+
+[SI4425, P-MOS](SI4425_P-MOS.pdf)  
+
+[LSM345_Schottky_diode](LSM345_MicrosemiCorporation.pdf)
