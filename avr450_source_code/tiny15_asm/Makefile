@@ -1,7 +1,5 @@
 # --
-# Copyright (c) 2020, xiaolaba, test done
-
-
+# Copyright (c) 2020, xiaolaba, test one more time
 # --
 
 MCU=attiny13
