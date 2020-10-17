@@ -1,0 +1,81 @@
+
+/*                      - lnk0t.xcl -
+
+    XLINK command file for the ICCA90 C-compiler using the -v0, -mt options.
+    Segments are defined for a generic AT90S with a maximum of
+    160 bytes data address space and   8 Kbytes program address space.
+
+    Usage: xlink your_file(s) -f lnk0t
+
+    File version:   $Revision: 1.9 $
+
+    The following segments are used by the compiler:
+
+    Program address space read only segments (internal Flash)
+    =========================================================
+    segment     address range  max size (dec)  used with compiler options    
+    -------     -------------  --------------  --------------------------    
+    INTVEC          0 -    1B   28 bytes       -e ("interrupt" keyword)      
+    RCODE          1C -  1FFF    8 Kbytes     
+    SWITCH         1C -  1FFF    8 Kbytes     
+    FLASH          1C -  1FFF    8 Kbytes      -e ("flash" keyword)          
+    CDATA0         1C -  1FFF    8 Kbytes                                    
+    CDATA1         1C -  1FFF    8 Kbytes      -e ("near" keyword)           
+    CCSTR          1C -  1FFF    8 Kbytes                                    
+    CODE           1C -  1FFF    8 Kbytes     
+
+    Data address space read/write segments
+    ==============================================================
+    segment     address range  max size (dec)  used with compiler options    
+    -------     -------------  --------------  --------------------------    
+    UDATA0         60 -    FF  224 bytes                                     
+    IDATA0         60 -    FF  224 bytes                                     
+    CSTACK         60 -    FF  224 bytes      
+    RSTACK         60 -    FF  224 bytes      
+    UDATA1         60 -    FF  160 bytes       -e ("near" keyword)           
+    IDATA1         60 -    FF  160 bytes       -e ("near" keyword)           
+    ECSTR          60 -    FF  224 bytes      
+
+   "tiny" pointers can only access objects in the range 0-FF.
+    Strings and constants are placed in RAM (segments IDATA0 and ECSTR
+    respectively). Initial values are copied from program space 
+    (CDATA0 and CCSTR respectively).
+*/
+
+/*  First define CPU */
+
+-ca90
+
+// Program address space (internal Flash memory) 
+-Z(CODE)INTVEC,RCODE,CDATA0,CCSTR,SWITCH,FLASH,CODE=00-7FF
+
+/* 
+   Data address space 
+   Built-in SRAM in 60-FF. The registers are in 0-1F and 
+   memmory mapped I/O in 20-5F 
+*/
+
+-Z(DATA)IDATA0,UDATA0,ECSTR,CSTACK+40,RSTACK+30=60-DF
+
+/*  Select reduced "printf" support to reduce library size.
+    See configuration section in manual concerning printf/sprintf. */
+
+-e_small_write=_formatted_write
+-e_small_write_P=_formatted_write_P
+
+/*  Disable floating-point support in "scanf" to reduce library size.
+    See configuration section in manual concerning scanf/sscanf */
+
+-e_medium_read=_formatted_read
+-e_medium_read_P=_formatted_read_P
+
+// Suppress one warning which is not relevant for this processor 
+-w29
+
+//  Now load the 'C' library 
+
+cl0t
+
+/*  Code will now reside in file aout.a90 or aout.d90, unless -o is specified 
+   .d90 is the default if debug system is linked (option -r) 
+   .a90 is the default without debugging. Default format is -Fmotorola */
