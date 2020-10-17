@@ -16,7 +16,7 @@ TARGET=main
 
 ASFLAGS=-I ../../asm/include
 
-SRCS = lion.asm
+SRCS = lion.asm nicd.asm nimh.asm
 
 all:
 	${AS} ${ASFLAGS} -o ${TARGET} ${SRCS}
