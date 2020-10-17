@@ -3,24 +3,29 @@
 # --
 
 MCU=attiny13
+
 #FUSE_L=0x6A
 #FUSE_H=0xFF
 
 F_CPU=1200000
 
+# assembler AVRA
 AS=avra
 
 AVRDUDE=avrdude
 
-TARGET=main
+#TARGET=main
+#ASFLAGS= -I ../../asm/include
 
-ASFLAGS=-I ../../asm/include
 
-SRCS = lion.asm nicd.asm nimh.asm
+# 3 files to be assembled
+SRCS := nimh nicd lion
 
-all:
-	${AS} ${ASFLAGS} -o ${TARGET} ${SRCS}
-
+# make each asm file on pass arguments
+all: $(SRCS)
+$(SRCS): %: %.asm
+	${AS} ${ASFLAGS} -fI -m $@.map -l $@.lst -o $@ $<
+    
 flash:
 	${AVRDUDE} -p ${MCU} -c usbasp -B10 -U flash:w:${TARGET}.hex:i -F -P usb
 
@@ -28,4 +33,4 @@ fuse:
 	$(AVRDUDE) -p ${MCU} -c usbasp -B10 -U hfuse:w:${FUSE_H}:m -U lfuse:w:${FUSE_L}:m
 
 clean:
-	rm -f *.asm~ *.hex *.obj *.cof
+	rm -f *.asm~ *.hex *.obj *.cof *.lst *.map

@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+# avr450
+
+>>>>>>> d1f0bc79a5488f7fa7e80c8a04a6a10eccc8d096
 ## how to assemble the asm files.
 Ubuntu 20.04, install AVRA first and then 'make all' 
 ```
@@ -11,3 +16,24 @@ make clean
 make all
 
 ```
+<<<<<<< HEAD
+=======
+
+
+
+
+
+Atmel / microchip pulled off this application note and source code, and no longer available for download, but why.  
+
+this is collection from the internet, however do not remember where pulled.  
+
+it is a reference design for li-polymer battery charging with code/hardware design.  
+
+![avr450_tiny15.JPG](avr450_tiny15.JPG)  
+
+![tiny_charger.JPG](tiny_charger.JPG)  
+
+[SI4425, P-MOS](SI4425_P-MOS.pdf)  
+
+[LSM345_Schottky_diode](LSM345_MicrosemiCorporation.pdf)
+>>>>>>> d1f0bc79a5488f7fa7e80c8a04a6a10eccc8d096
