@@ -29,7 +29,7 @@
 
 .include	"tn15def.inc"
 .include    	"bc.inc" 
-.include 	"NiCd.inc"
+.include 	"nicd.inc"
  
 ;*************************[ Interrupt Vector Table ]**********************
 ; Execution always starts here

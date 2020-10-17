@@ -19,7 +19,7 @@ AVRDUDE=avrdude
 
 
 # 3 files to be assembled
-SRCS := nimh nicd lion
+SRCS := nimh nicd lion sttn12
 
 # make each asm file on pass arguments
 all: $(SRCS)
