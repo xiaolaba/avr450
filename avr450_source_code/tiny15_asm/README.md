@@ -1,6 +1,12 @@
-
 # avr450
 
+## assembler used is AVRA (open source), the equilvent of AVRASM2 (Atmel's software product)  
+AVRA need device header files (*.inc) to work with. how to obtians those header files? download and install AVR studio 7.0,  
+```
+C:\Program Files (x86)\Atmel\Studio\7.0\packs\atmel\ATtiny_DFP\1.3.229\avrasm  
+```
+copy this folder \avrasm\ to project root, 
+Makefile, include the flagm "ASFLAGS= -I ../../avrasm/inc"
 
 ## how to assemble the asm files.
 Ubuntu 20.04, install AVRA first and then 'make all' 
@@ -20,7 +26,6 @@ make all
 
 
 
-
 Atmel / microchip pulled off this application note and source code, and no longer available for download, but why.  
 
 this is collection from the internet, however do not remember where pulled.  
@@ -34,4 +39,3 @@ it is a reference design for li-polymer battery charging with code/hardware desi
 [SI4425, P-MOS](SI4425_P-MOS.pdf)  
 
 [LSM345_Schottky_diode](LSM345_MicrosemiCorporation.pdf)
-

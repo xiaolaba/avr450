@@ -1,5 +1,5 @@
 # --
-# Copyright (c) 2020, xiaolaba, test one more time
+# Copyright (c) 2020, xiaolaba
 # --
 
 MCU=attiny13
@@ -15,11 +15,11 @@ AS=avra
 AVRDUDE=avrdude
 
 #TARGET=main
-#ASFLAGS= -I ../../asm/include
+ASFLAGS= -I ../../avrasm/inc
 
 
 # 3 files to be assembled
-SRCS := nimh nicd lion sttn12
+SRCS := nimh nicd lion
 
 # make each asm file on pass arguments
 all: $(SRCS)

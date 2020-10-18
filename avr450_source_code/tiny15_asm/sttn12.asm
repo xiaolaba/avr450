@@ -6,7 +6,8 @@
 ;.include "tn25def.inc" 
 ;.include "2323def.inc"   
 ;.include "tn12def.inc"
-.include    "tn15def.inc"
+;.include    "tn15def.inc"
+.include    "tn13def.inc"
 .list
 ;******************************************************
 
