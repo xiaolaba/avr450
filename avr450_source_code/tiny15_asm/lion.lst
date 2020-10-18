@@ -1,0 +1,876 @@
+
+AVRA   Ver. 1.4.2 lion.asm Sun Oct 18 17:11:59 2020
+
+
+         
+         ;  Last change:  JB    00/07/11 (YY/MM/DD)
+          
+         ;**************************** MODULE INFO  *******************************
+         ;
+         ;   File name   :  bclion.asm
+         ;   AUTHOR      :  Atmel
+         ;   VERSION     :  1.2
+         ;   DATE        :  July 10th 2000
+         ;
+         ;   Compiler    :  Atmel AVR Assembler 1.30
+         ;   Contents    :  Travel Battery Charger Reference Design with ATtiny15
+         ;                    
+         ;	Change log
+         ;	V1.2		JB	Fixed bug when stopping PWM output
+         
+         ;*************************[ Included Define Files ]***********************
+         ; Define files included here 
+         ; Note: Battery Specific Functions are included at the end of this file
+         
+          .include	"tn15def.inc"
+         ;***** THIS IS A MACHINE GENERATED FILE - DO NOT EDIT ********************
+         ;***** Created: 2005-01-11 10:31 ******* Source: ATtiny15.xml ************
+         ;*************************************************************************
+         ;* A P P L I C A T I O N   N O T E   F O R   T H E   A V R   F A M I L Y
+         ;* 
+         ;* Number            : AVR000
+         ;* File Name         : "tn15def.inc"
+         ;* Title             : Register/Bit Definitions for the ATtiny15
+         ;* Date              : 2005-01-11
+         ;* Version           : 2.14
+         ;* Support E-mail    : avr@atmel.com
+         ;* Target MCU        : ATtiny15
+         ;* 
+         ;* DESCRIPTION
+         ;* When including this file in the assembly program file, all I/O register 
+         ;* names and I/O register bit names appearing in the data book can be used.
+         ;* In addition, the six registers forming the three data pointers X, Y and 
+         ;* Z have been assigned names XL - ZH. Highest RAM address for Internal 
+         ;* SRAM is also defined 
+         ;* 
+         ;* The Register names are represented by their hexadecimal address.
+         ;* 
+         ;* The Register Bit names are represented by their bit number (0-7).
+         ;* 
+         ;* Please observe the difference in using the bit names with instructions
+         ;* such as "sbr"/"cbr" (set/clear bit in register) and "sbrs"/"sbrc"
+         ;* (skip if bit in register set/cleared). The following example illustrates
+         ;* this:
+         ;* 
+         ;* in    r16,PORTB             ;read PORTB latch
+         ;* sbr   r16,(1<<PB6)+(1<<PB5) ;set PB6 and PB5 (use masks, not bit#)
+         ;* out   PORTB,r16             ;output to PORTB
+         ;* 
+         ;* in    r16,TIFR              ;read the Timer Interrupt Flag Register
+         ;* sbrc  r16,TOV0              ;test the overflow flag (use bit#)
+         ;* rjmp  TOV0_is_set           ;jump if set
+         ;* ...                         ;otherwise do something else
+         ;*************************************************************************
+         
+          #ifndef _TN15DEF_INC_
+          #define _TN15DEF_INC_
+         
+         
+          #pragma partinc 0
+         
+         ; ***** SPECIFY DEVICE ***************************************************
+          .device ATtiny15
+          #pragma AVRPART ADMIN PART_NAME ATtiny15
+          .equ	SIGNATURE_000	= 0x1e
+          .equ	SIGNATURE_001	= 0x90
+          .equ	SIGNATURE_002	= 0x06
+         
+          #pragma AVRPART CORE CORE_VERSION V0E
+         
+         
+         ; ***** I/O REGISTER DEFINITIONS *****************************************
+         ; NOTE:
+         ; Definitions marked "MEMORY MAPPED"are extended I/O ports
+         ; and cannot be used with IN/OUT instructions
+          .equ	SREG	= 0x3f
+          .equ	GIMSK	= 0x3b
+          .equ	GIFR	= 0x3a
+          .equ	TIMSK	= 0x39
+          .equ	TIFR	= 0x38
+          .equ	MCUCR	= 0x35
+          .equ	MCUSR	= 0x34
+          .equ	TCCR0	= 0x33
+          .equ	TCNT0	= 0x32
+          .equ	OSCCAL	= 0x31
+          .equ	TCCR1	= 0x30
+          .equ	TCNT1	= 0x2f
+          .equ	OCR1A	= 0x2e
+          .equ	OCR1B	= 0x2d
+          .equ	SFIOR	= 0x2c
+          .equ	WDTCR	= 0x21
+          .equ	EEAR	= 0x1e
+          .equ	EEDR	= 0x1d
+          .equ	EECR	= 0x1c
+          .equ	PORTB	= 0x18
+          .equ	DDRB	= 0x17
+          .equ	PINB	= 0x16
+          .equ	ACSR	= 0x08
+          .equ	ADMUX	= 0x07
+          .equ	ADCSR	= 0x06
+          .equ	ADCH	= 0x05
+          .equ	ADCL	= 0x04
+         
+         
+         ; ***** BIT DEFINITIONS **************************************************
+         
+         ; ***** AD_CONVERTER *****************
+         ; ADMUX - The ADC multiplexer Selection Register
+          .equ	MUX0	= 0	; Analog Channel and Gain Selection Bits
+          .equ	MUX1	= 1	; Analog Channel and Gain Selection Bits
+          .equ	MUX2	= 2	; Analog Channel and Gain Selection Bits
+          .equ	ADLAR	= 5	; Left Adjust Result
+          .equ	REFS0	= 6	; Reference Selection Bit 0
+          .equ	REFS1	= 7	; Reference Selection Bit 1
+         
+         ; ADCSR - The ADC Control and Status register
+          .equ	ADPS0	= 0	; ADC  Prescaler Select Bits
+          .equ	ADPS1	= 1	; ADC  Prescaler Select Bits
+          .equ	ADPS2	= 2	; ADC  Prescaler Select Bits
+          .equ	ADIE	= 3	; ADC Interrupt Enable
+          .equ	ADIF	= 4	; ADC Interrupt Flag
+          .equ	ADFR	= 5	; ADC  Free Running Select
+          .equ	ADSC	= 6	; ADC Start Conversion
+          .equ	ADEN	= 7	; ADC Enable
+         
+         ; ADCH - ADC Data Register High Byte
+          .equ	ADCH0	= 0	; ADC Data Register High Byte Bit 0
+          .equ	ADCH1	= 1	; ADC Data Register High Byte Bit 1
+          .equ	ADCH2	= 2	; ADC Data Register High Byte Bit 2
+          .equ	ADCH3	= 3	; ADC Data Register High Byte Bit 3
+          .equ	ADCH4	= 4	; ADC Data Register High Byte Bit 4
+          .equ	ADCH5	= 5	; ADC Data Register High Byte Bit 5
+          .equ	ADCH6	= 6	; ADC Data Register High Byte Bit 6
+          .equ	ADCH7	= 7	; ADC Data Register High Byte Bit 7
+         
+         ; ADCL - ADC Data Register Low Byte
+          .equ	ADCL0	= 0	; ADC Data Register Low Byte Bit 0
+          .equ	ADCL1	= 1	; ADC Data Register Low Byte Bit 1
+          .equ	ADCL2	= 2	; ADC Data Register Low Byte Bit 2
+          .equ	ADCL3	= 3	; ADC Data Register Low Byte Bit 3
+          .equ	ADCL4	= 4	; ADC Data Register Low Byte Bit 4
+          .equ	ADCL5	= 5	; ADC Data Register Low Byte Bit 5
+          .equ	ADCL6	= 6	; ADC Data Register Low Byte Bit 6
+          .equ	ADCL7	= 7	; ADC Data Register Low Byte Bit 7
+         
+         
+         ; ***** ANALOG_COMPARATOR ************
+         ; ACSR - Analog Comparator Control And Status Register
+          .equ	ACIS0	= 0	; Analog Comparator Interrupt Mode Select bit 0
+          .equ	ACIS1	= 1	; Analog Comparator Interrupt Mode Select bit 1
+          .equ	ACIE	= 3	; Analog Comparator Interrupt Enable
+          .equ	ACI	= 4	; Analog Comparator Interrupt Flag
+          .equ	ACO	= 5	; Analog Compare Output
+          .equ	ACBG	= 6	; Analog Comparator Bandgap Select
+          .equ	AINBG6	= ACBG	; For compatibility
+          .equ	ACD	= 7	; Analog Comparator Disable
+         
+         
+         ; ***** EEPROM ***********************
+         ; EEAR - EEPROM Read/Write Access
+          .equ	EEAR0	= 0	; EEPROM Read/Write Access bit 0
+          .equ	EEAR1	= 1	; EEPROM Read/Write Access bit 1
+          .equ	EEAR2	= 2	; EEPROM Read/Write Access bit 2
+          .equ	EEAR3	= 3	; EEPROM Read/Write Access bit 3
+          .equ	EEAR4	= 4	; EEPROM Read/Write Access bit 4
+          .equ	EEAR5	= 5	; EEPROM Read/Write Access bit 5
+         
+         ; EEDR - EEPROM Data Register
+          .equ	EEDR0	= 0	; EEPROM Data Register bit 0
+          .equ	EEDR1	= 1	; EEPROM Data Register bit 1
+          .equ	EEDR2	= 2	; EEPROM Data Register bit 2
+          .equ	EEDR3	= 3	; EEPROM Data Register bit 3
+          .equ	EEDR4	= 4	; EEPROM Data Register bit 4
+          .equ	EEDR5	= 5	; EEPROM Data Register bit 5
+          .equ	EEDR6	= 6	; EEPROM Data Register bit 6
+          .equ	EEDR7	= 7	; EEPROM Data Register bit 7
+         
+         ; EECR - EEPROM Control Register
+          .equ	EERE	= 0	; EEPROM Read Enable
+          .equ	EEWE	= 1	; EEPROM Write Enable
+          .equ	EEMWE	= 2	; EEPROM Master Write Enable
+          .equ	EERIE	= 3	; EEProm Ready Interrupt Enable
+         
+         
+         ; ***** PORTB ************************
+         ; PORTB - Data Register, Port B
+          .equ	PORTB0	= 0	; 
+          .equ	PB0	= 0	; For compatibility
+          .equ	PORTB1	= 1	; 
+          .equ	PB1	= 1	; For compatibility
+          .equ	PORTB2	= 2	; 
+          .equ	PB2	= 2	; For compatibility
+          .equ	PORTB3	= 3	; 
+          .equ	PB3	= 3	; For compatibility
+          .equ	PORTB4	= 4	; 
+          .equ	PB4	= 4	; For compatibility
+         
+         ; DDRB - Data Direction Register, Port B
+          .equ	DDB0	= 0	; 
+          .equ	DDB1	= 1	; 
+          .equ	DDB2	= 2	; 
+          .equ	DDB3	= 3	; 
+          .equ	DDB4	= 4	; 
+          .equ	DDB5	= 5	; 
+         
+         ; PINB - Input Pins, Port B
+          .equ	PINB0	= 0	; 
+          .equ	PINB1	= 1	; 
+          .equ	PINB2	= 2	; 
+          .equ	PINB3	= 3	; 
+          .equ	PINB4	= 4	; 
+          .equ	PINB5	= 5	; 
+         
+         
+         ; ***** TIMER_COUNTER_0 **************
+         ; TIMSK - Timer/Counter Interrupt Mask Register
+          .equ	TOIE0	= 1	; Timer/Counter0 Overflow Interrupt Enable
+         
+         ; TIFR - Timer/Counter Interrupt Flag register
+          .equ	TOV0	= 1	; Timer/Counter0 Overflow Flag
+         
+         ; TCCR0 - Timer/Counter0 Control Register
+          .equ	CS00	= 0	; Clock Select0 bit 0
+          .equ	CS01	= 1	; Clock Select0 bit 1
+          .equ	CS02	= 2	; Clock Select0 bit 2
+         
+         ; TCNT0 - Timer Counter 0
+          .equ	TCNT00	= 0	; Timer Counter 0 bit 0
+          .equ	TCNT01	= 1	; Timer Counter 0 bit 1
+          .equ	TCNT02	= 2	; Timer Counter 0 bit 2
+          .equ	TCNT03	= 3	; Timer Counter 0 bit 3
+          .equ	TCNT04	= 4	; Timer Counter 0 bit 4
+          .equ	TCNT05	= 5	; Timer Counter 0 bit 5
+          .equ	TCNT06	= 6	; Timer Counter 0 bit 6
+          .equ	TCNT07	= 7	; Timer Counter 0 bit 7
+         
+         
+         ; ***** WATCHDOG *********************
+         ; WDTCR - Watchdog Timer Control Register
+          .equ	WDP0	= 0	; Watch Dog Timer Prescaler bit 0
+          .equ	WDP1	= 1	; Watch Dog Timer Prescaler bit 1
+          .equ	WDP2	= 2	; Watch Dog Timer Prescaler bit 2
+          .equ	WDE	= 3	; Watch Dog Enable
+          .equ	WDTOE	= 4	; RW
+          .equ	WDDE	= WDTOE	; For compatibility
+         
+         
+         ; ***** CPU **************************
+         ; SREG - Status Register
+          .equ	SREG_C	= 0	; Carry Flag
+          .equ	SREG_Z	= 1	; Zero Flag
+          .equ	SREG_N	= 2	; Negative Flag
+          .equ	SREG_V	= 3	; Two's Complement Overflow Flag
+          .equ	SREG_S	= 4	; Sign Bit
+          .equ	SREG_H	= 5	; Half Carry Flag
+          .equ	SREG_T	= 6	; Bit Copy Storage
+          .equ	SREG_I	= 7	; Global Interrupt Enable
+         
+         ; MCUCR - MCU Control Register
+          .equ	ISC00	= 0	; Interrupt Sense Control 0 bit 0
+          .equ	ISC01	= 1	; Interrupt Sense Control 0 bit 1
+          .equ	SM0	= 3	; Sleep Mode Select Bit 0
+          .equ	SM1	= 4	; Sleep Mode Select Bit 1
+          .equ	SE	= 5	; Sleep Enable
+          .equ	PUD	= 6	; Pull-up Disable
+         
+         ; MCUSR - MCU Status register
+          .equ	PORF	= 0	; Power-On Reset Flag
+          .equ	EXTRF	= 1	; External Reset Flag
+          .equ	BORF	= 2	; Brown-out Reset Flag
+          .equ	WDRF	= 3	; Watchdog Reset Flag
+         
+         ; OSCCAL - Status Register
+          .equ	CAL0	= 0	; Oscillator Calibration Value Bit 0
+          .equ	CAL1	= 1	; Oscillator Calibration Value Bit 1
+          .equ	CAL2	= 2	; Oscillator Calibration Value Bit 2
+          .equ	CAL3	= 3	; Oscillator Calibration Value Bit 3
+          .equ	CAL4	= 4
+          .equ	CAL5	= 5	; Oscillator Calibration Value Bit 5
+          .equ	CAL6	= 6	; Oscillator Calibration Value Bit 6
+          .equ	CAL7	= 7	; Oscillator Calibration Value Bit 7
+         
+         
+         ; ***** EXTERNAL_INTERRUPT ***********
+         ; GIMSK - General Interrupt Mask Register
+          .equ	PCIE	= 5	; Pin Change Interrupt Enable
+          .equ	INT0	= 6	; External Interrupt Request 0 Enable
+         
+         ; GIFR - General Interrupt Flag register
+          .equ	PCIF	= 5	; Pin Change Interrupt Flag
+          .equ	INTF0	= 6	; External Interrupt Flag 0
+         
+         
+         ; ***** TIMER_COUNTER_1 **************
+         ; TCCR1 - Timer/Counter Control Register
+          .equ	CS10	= 0	; Clock Select Bits
+          .equ	CS11	= 1	; Clock Select Bits
+          .equ	CS12	= 2	; Clock Select Bits
+          .equ	CS13	= 3	; Clock Select Bits
+          .equ	COM1A0	= 4	; Compare Output Mode, Bit 1
+          .equ	COM1A1	= 5	; Compare Output Mode, Bit 0
+          .equ	PWM1	= 6	; Pulse Width Modulator Enable
+          .equ	CTC1	= 7	; Clear Timer/Counter on Compare Match
+         
+         ; TCNT1 - Timer/Counter Register
+          .equ	TCNT1_0	= 0	; Timer/Counter Register Bit 0
+          .equ	TCNT1_1	= 1	; Timer/Counter Register Bit 1
+          .equ	TCNT1_2	= 2	; Timer/Counter Register Bit 2
+          .equ	TCNT1_3	= 3	; Timer/Counter Register Bit 3
+          .equ	TCNT1_4	= 4	; Timer/Counter Register Bit 4
+          .equ	TCNT1_5	= 5	; Timer/Counter Register Bit 5
+          .equ	TCNT1_6	= 6	; Timer/Counter Register Bit 6
+          .equ	TCNT1_7	= 7	; Timer/Counter Register Bit 7
+         
+         ; OCR1A - Output Compare Register
+          .equ	OCR1A0	= 0	; Output Compare Register A Bit 0
+          .equ	OCR1A1	= 1	; Output Compare Register A Bit 1
+          .equ	OCR1A2	= 2	; Output Compare Register A Bit 2
+          .equ	OCR1A3	= 3	; Output Compare Register A Bit 3
+          .equ	OCR1A4	= 4	; Output Compare Register A Bit 4
+          .equ	OCR1A5	= 5	; Output Compare Register A Bit 5
+          .equ	OCR1A6	= 6	; Output Compare Register A Bit 6
+          .equ	OCR1A7	= 7	; Output Compare Register A Bit 7
+         
+         ; OCR1B - Output Compare Register
+          .equ	OCR1B0	= 0	; Output Compare Register B Bit 0
+          .equ	OCR1B1	= 1	; Output Compare Register B Bit 1
+          .equ	OCR1B2	= 2	; Output Compare Register B Bit 2
+          .equ	OCR1B3	= 3	; Output Compare Register B Bit 3
+          .equ	OCR1B4	= 4	; Output Compare Register B Bit 4
+          .equ	OCR1B5	= 5	; Output Compare Register B Bit 5
+          .equ	OCR1B6	= 6	; Output Compare Register B Bit 6
+          .equ	OCR1B7	= 7	; Output Compare Register B Bit 7
+         
+         ; TIMSK - Timer/Counter Interrupt Mask Register
+          .equ	TOIE1	= 2	; Timer/Counter1 Overflow Interrupt Enable
+          .equ	OCIE1A	= 6	; OCIE1A: Timer/Counter1 Output Compare Interrupt Enable
+         
+         ; TIFR - Timer/Counter Interrupt Flag Register
+          .equ	TOV1	= 2	; Timer/Counter1 Overflow Flag
+          .equ	OCF1A	= 6	; Timer/Counter1 Output Compare Flag 1A
+         
+         ; SFIOR - Special Function IO Register
+          .equ	PSR0	= 0	; Prescaler Reset Timer/Counter0
+          .equ	PSR1	= 1	; Prescaler Reset Timer/Counter1
+          .equ	FOC1A	= 2	; Force Output Compare 1A
+         
+         
+         
+         ; ***** LOCKSBITS ********************************************************
+          .equ	LB1	= 0	; Lockbit
+          .equ	LB2	= 1	; Lockbit
+         
+         
+         ; ***** FUSES ************************************************************
+         ; LOW fuse bits
+         
+         
+         
+         ; ***** CPU REGISTER DEFINITIONS *****************************************
+          .def	XH	= r27
+          .def	XL	= r26
+          .def	YH	= r29
+          .def	YL	= r28
+          .def	ZH	= r31
+          .def	ZL	= r30
+         
+         
+         
+         ; ***** DATA MEMORY DECLARATIONS *****************************************
+          .equ	FLASHEND	= 0x01ff	; Note: Word address
+          .equ	IOEND	= 0x003f
+          .equ	SRAM_SIZE	= 0
+          .equ	RAMEND	= 0x0000
+          .equ	XRAMEND	= 0x0000
+          .equ	E2END	= 0x003f
+          .equ	EEPROMEND	= 0x003f
+          .equ	EEADRBITS	= 6
+          #pragma AVRPART MEMORY PROG_FLASH 1024
+          #pragma AVRPART MEMORY EEPROM 64
+          #pragma AVRPART MEMORY INT_SRAM SIZE 0
+          #pragma AVRPART MEMORY INT_SRAM START_ADDR 0x0
+         
+         
+         
+         
+         
+         ; ***** INTERRUPT VECTORS ************************************************
+          .equ	INT0addr	= 0x0001	; External Interrupt 0
+          .equ	PCI0addr	= 0x0002	; External Interrupt Request 0
+          .equ	OC1addr	= 0x0003	; Timer/Counter1 Compare Match
+          .equ	OVF1addr	= 0x0004	; Timer/Counter1 Overflow
+          .equ	OVF0addr	= 0x0005	; Timer/Counter0 Overflow
+          .equ	ERDYaddr	= 0x0006	; EEPROM Ready
+          .equ	ACIaddr	= 0x0007	; Analog Comparator
+          .equ	ADCCaddr	= 0x0008	; ADC Conversion Ready
+         
+          .equ	INT_VECTORS_SIZE	= 9	; size in words
+         
+          #pragma AVRPART CORE INSTRUCTIONS_NOT_SUPPORTED break
+         
+          #endif  /* _TN15DEF_INC_ */
+         
+         ; ***** END OF FILE ******************************************************
+          ; ***** END OF FILE ******************************************************
+          .include    	"bc.inc"
+         
+         ;  Last change:  JB    00/07/11 (YY/MM/DD)
+         
+         ;**************************** MODULE INFO  *******************************
+         ;
+         ;   File name   :  BC.INC
+         ;   AUTHOR      :  Atmel
+         ;   VERSION     :  1.2
+         ;   DATE        :  July 10th 2000
+         ;
+         ;   Compiler    :  Atmel AVR Assembler 1.30
+         ;   Contents    :  Header file for Travel Charger Reference Design
+         ;
+         
+         
+         ;*************************[ Charger  Characteristics ]********************
+         
+          .equ	sec_duration		= 6	; 1 Second (#Timer0 Overflow Interrupts)
+          .equ	min_duration		= 61	; ~1 Minute (1.6 MHz = 59,965 sec)
+         ;.equ	min_duration		= 6	; ~1 Minute (1.6 MHz = 6 sec), debug
+         
+          .equ	avg_loop_cnt		= 4	; ADC Measurement Average Loop Count
+         								; NOTE! Count = (1<<avr_loop_cnt) !!!
+         
+         ;*************************[ Hardware Assignments ]************************
+         
+          .equ	PWM_PIN			= PB1	; PWM pin
+         
+          .equ	ADC_T_channel		=0x41	; Battery Temperature Channel
+          .equ	ADC_I_channel		=0x42	; Battery Current Channel
+          .equ	ADC_V_channel		=0x43	; Battery Voltage Channel
+         
+          .equ	ADC_offset_channel	=0x44	; ADC Offset Channel
+          .equ	ADC_g_offset_channel	=0x45	; ADC gain Offset Channel
+          .equ	ADC_diff_channel	=0x46	; ADC Diff Channel
+          .equ	ADC_gain_channel	=0x47	; ADC gain Channel
+         
+         ;*************************[ Register Assignments ]************************
+         
+          .def	SREG_Storage		=r1	; Temporary Storage During Interrupts
+         
+          .def	av_l			=r5	; Average Low Byte (ADC Measurement)
+          .def	av_h			=r6	; Average High Byte (ADC Measurement)
+          .def	last_min_Vl		=r10	; Last minute Voltage Low Byte
+          .def	last_min_Vh		=r11	; Last minute Voltage High Byte
+          .def	last_min_Tl		=r12	; Last minute Temperature Low Byte
+          .def	last_min_Th		=r13	; Last minute Temperature High Byte
+          .def	last_t_min		=r14	; Last minute tick counter
+         
+          .def	temp			=r16	; Temporary Storage Register 1
+          .def	temp2			=r17	; Temporary Storage Register 2
+          .def	tick_cnt		=r18	; Tick Counter
+          .def	t_sec			=r19	; Time_seconds
+          .def	t_min			=r20	; Time_minutes
+          .def	control			=r21	; Charge control register
+          .def	Vl			=r22	; Voltage Low Byte
+          .def	Vh			=r23	; Voltage High Byte
+          .def	Il			=r24	; Current Low Byte
+          .def	Ih			=r25	; Current High Byte
+          .def	Tl			=r26	; Temperature Low Byte
+          .def	Th			=r27	; Temperature High Byte
+          .def	chargel			=r28	; Temp variable, used only in Liion
+          .def	chargeh			=r29	; Temp variable, used only in Liion
+         
+         
+         ;*************************[ Charge Control ]******************************
+         
+          .equ	NO_PWM			=0x01
+          .include 	"liion.inc"				;Battery spec.
+         
+         ;  Last change:  JB    00/07/11 (YY/MM/DD)
+         
+         ;**************************** MODULE INFO  *******************************
+         ;
+         ;   File name   :  LIION.INC
+         ;   AUTHOR      :  Atmel
+         ;   VERSION     :  1.2
+         ;   DATE        :  July 10th 2000
+         ;
+         ;   Compiler    :  Atmel AVR Assembler 1.30
+         ;   Contents    :  Header file for liion.asm, containing the battery
+         ;                  specific definitions, functions and subroutines
+         ;                   
+         ;
+         ;                   20 * capacity * R16_17 * AD_resolution      
+         ;   I_fast      =   ______________________________________
+         ;                   R18 * (R8_9 + R16_17) * V_ref_voltage
+         ;                   
+         ;
+         ;                   cell_voltage * cells * R16_17 * AD_resolution
+         ;   max_V_Fast  =   _____________________________________________
+         ;                   (R8_9 + R16_17) * V_ref_voltage                   
+         ;
+         ;                   
+         ;   I_trickle   =   I_fast/40
+         ;                   
+         ;                   20 * min_I * cells * R16_17 * AD_resolution      
+         ;   min_I_fast  =   ___________________________________________
+         ;                   R18 * (R8_9 + R16_17) * V_ref_voltage
+         ;
+         ;	Change log
+         ;	V1.1	JB		Added calculations for measurements, changed charge parameters
+         ;								
+         
+         
+         ;*************************[ Battery Characteristics ]*********************
+         ;Modify these values according to battery datasheet
+         
+          .equ    cells           = 1     	; number of cells in the battery pack
+         
+          .equ    capacity        = 750       ; battery pack capacity in mAh LiIon
+         
+          .equ    cell_voltage    = 4100      ; change cell voltage between 4100 mV
+                                             ; and 4200 mV
+          .equ    AD_ref_voltage  = 3670      ; A/D Converter reference voltage, 3670mV
+          .equ    AD_resolution   = 1024      ; A/D converter resolution, 10-bit, 1024 steps
+          
+          .equ    min_T_abs       = 0x02C7    ; Termination Temperature = 5 C
+          .equ    max_T_abs       = 0x0175    ; Termination Temperature = 40 C
+         
+          .equ    R8_9            = 2200      ; Scaling resistor R8 and R9 value(ohm)
+          .equ    R16_17          = 10000     ; Scaling resistor R17 and R18 value(ohm)
+          .equ    R18             = 4         ; Current sense resistor value 1/4 ohm(0.25)
+         
+          .equ    min_I           = 50        ; Terminate charge when current drops below min_I, 50mA/cell
+         
+          .equ    max_time_fast   = 30        ; Maximum Fast Charge Time = 30 min
+          .equ    max_time_trickle = 30       ; Maximum trickle Charge Time = 90 min at 1C current
+         
+         ;*************************[ Charge Conditions ]***************************
+         
+         ; Fast Charge Current Limit
+          .equ    I_fast          = 871       ; See formula above for calculations
+         
+         ; Fast Charge Voltage Limit
+          .equ    max_V_fast      = 957       ; See formula above for calculations
+         
+         ; Trickle Charge Current Limit
+          .equ    I_trickle       = 22        ; See formula above for calculations
+         
+         ; Trickle Charge Voltage Limit
+          .equ    max_V_trickle   = 957       ; max_V_trickle = max_V_fast
+             
+         ;*************************[ Charge Termination Conditions ]***************
+         
+         ; Minimum Fast Charge Current
+          .equ    min_I_fast      = 58
+          .equ    V_tolerance     = 11
+         
+         
+         ;*************************[ Interrupt Vector Table ]**********************
+         ; Execution always starts here
+          
+          	.org 0x00
+C:000000 e005       	ldi			temp, 0x05
+C:000001 bf03       	out			TCCR0, temp				; TCNT0 CK/1024
+C:000002 e401       	ldi			temp, 0x41				; TCNT1 8-bit PWM @ 100 kHz
+C:000003 bf00       	out			TCCR1, temp				; output DISCONNECTED
+C:000004 c056      	rjmp		fast_charge
+         
+          	.org OVF0addr
+         	
+         ;*****************[ Timer 0 Overflow Interrupt Handler ]******************
+          Timer0_OVF_Int:
+C:000005 b61f      	in			SREG_Storage, SREG		; Store SREG Contents
+         
+C:000006 952a      	dec			tick_cnt				; Decrement tick Counter
+C:000007 f431      	brne		t0ovf_exit
+         	
+         	; This code is executed once a second	
+C:000008 e026      	ldi			tick_cnt, sec_duration	; Reset Tick Counter
+         	; *** Insert user code here (approx 1 second)
+C:000009 9533      	inc			t_sec					; Increment second counter
+C:00000a 333d      	cpi			t_sec, min_duration
+C:00000b f411      	brne		t0ovf_exit				; Test second overflow
+         	; This code is executed once a minute
+C:00000c 2733      	clr			t_sec					; Clear Second Counter
+         	; *** Insert user code here (approx 1 minute)
+C:00000d 9543      	inc			t_min					; Increment Minutes Counter
+         	
+          t0ovf_exit:
+C:00000e be1f      	out			SREG, SREG_Storage		; Restore SREG
+C:00000f 9518      	reti
+         
+         ;*************************[ PWM Control ]*********************************
+         ; Functions to start and stop PWM output
+          start_PWM:
+C:000010 e601       	ldi			temp, 0x61
+C:000011 bf00       	out			TCCR1, temp				; TCNT1 8-bit PWM @ 100 kHz
+C:000012 9508      	ret
+         
+          stop_PWM:
+C:000013 98c1      	cbi			PORTB, PWM_PIN			; Lock current to zero
+C:000014 9ab9      	sbi			DDRB, PWM_PIN			
+C:000015 e401      	ldi			temp, 0x41
+C:000016 bf00      	out			TCCR1, temp				; Disconnect PWM output
+C:000017 9508      	ret
+         
+         ;*******************[function F_measure: Measure all Parameters ]***************
+         ; Measure Charge Parameters
+         
+          f_measure:
+C:000018 e401      	ldi			temp,ADC_T_channel		; Select Temperature Channel
+C:000019 d00e      	rcall		convert_average			; Measure Battery Temperature
+C:00001a 2da5      	mov			Tl, av_l
+C:00001b 2db6      	mov			Th, av_h				; Record value
+         
+C:00001c e407      	ldi			temp,ADC_gain_channel		; Select Current Channel
+C:00001d d00a      	rcall		convert_average			; Measure Battery Current
+C:00001e 2d85      	mov			Il, av_l
+C:00001f 2d96      	mov			Ih, av_h				; Record value
+         
+C:000020 fd51      	sbrc		control,NO_PWM			; Check control 
+C:000021 dff1      	rcall		stop_PWM				; Stop PWM to measure battery voltage, 
+C:000022 e403      	ldi			temp,ADC_V_channel		; Select Voltage Channel
+C:000023 d004      	rcall		convert_average			; Measure Battery Charge Voltage
+C:000024 2d65      	mov			Vl, av_l
+C:000025 2d76      	mov			Vh, av_h				; Record value
+C:000026 dfe9      	rcall		start_PWM
+         
+         ;	ldi			temp,ADC_g_offset_channel		; Select Current Channel
+         ;	rcall		convert_average	
+         	
+C:000027 9508      	ret
+         
+         	
+         ;*************************[ ADC Handler ]*********************************
+         ; This function measures the channel selected by [temp], and returns the 
+         ; converted value in [av_h:av_l]
+         
+          convert_average:
+C:000028 b907      	out			ADMUX, temp				; Set ADC Channel
+         
+C:000029 2455      	clr			av_l
+C:00002a 2466      	clr			av_h					; Clear Average Registers
+C:00002b e110      	ldi			temp2,(1<<avg_loop_cnt) 	; Set loop counter
+C:00002c ed04       	ldi		 	temp,0xD4
+C:00002d b906      	out			ADCSR,temp
+         
+          convert_start:
+C:00002e 9a36      	sbi			ADCSR, ADSC				; Start A/D Conversions
+         
+          convert_wait:
+C:00002f 9b34      	sbis		ADCSR, ADIF
+C:000030 cffe      	rjmp		convert_wait			; Wait for Conversion to finish
+         
+C:000031 b104      	in			temp, ADCL
+C:000032 0e50      	add			av_l, temp
+C:000033 b105      	in			temp, ADCH
+C:000034 1e60      	adc			av_h, temp				; Add measured value to average
+         	
+C:000035 951a      	dec			temp2
+C:000036 f7b9      	brne		convert_start			; Repeat (1<<avg_loop_cnt) times
+         	
+C:000037 e014      	ldi			temp2, avg_loop_cnt		; Set shift counter
+          convert_avg:	
+C:000038 9466      	lsr			av_h
+C:000039 9457      	ror			av_l					; av_h:av_l = av_h:av_l/2
+C:00003a 951a      	dec			temp2
+C:00003b f7e1      	brne		convert_avg				; Repeat (avg_loop_cnt) times
+         
+C:00003c 9837      	cbi			ADCSR,ADEN
+C:00003d 9508      	ret									; return to measure
+         	
+          f_terminate_error:
+C:00003e dfd4      	rcall		stop_PWM	
+          error_loop:
+C:00003f cfff      	rjmp		error_loop
+         
+         
+         ;*******************[ Adjust Charge Current  ]****************
+         ;  Adjust Charge Current
+         
+          adj_charge:
+C:000040 170c      	cp			temp, chargel
+C:000041 071d      	cpc			temp2,chargeh
+C:000042 f040      	brlo		f_dec	
+         
+C:000043 17c0      	cp			chargel,temp			; if( I < I_fast )
+C:000044 07d1      	cpc			chargeh,temp2	
+C:000045 f448      	brsh		f_end					; increase charge current
+          f_inc:	
+C:000046 b50e      	in			temp, OCR1A				; increment charge current
+C:000047 5f0f      	subi		temp, 0xFF				; if( OCR1A < 0xFF )
+C:000048 f430      	brcc		f_end
+C:000049 bd0e      	out			OCR1A, temp
+C:00004a c004      	rjmp		f_end
+          f_dec:
+C:00004b b50e      	in			temp, OCR1A				; decrement charge current
+C:00004c 5001      	subi		temp, 0x01				; if( OCR1A > 0x00 )
+C:00004d f008      	brcs		f_end
+C:00004e bd0e      	out			OCR1A, temp
+C:00004f 9508      f_end:ret
+         
+         
+         ;*******************[Check Temperature ]********************
+         ; checking temperature and time, terminate if outside range
+         
+          check_temperature:
+C:000050 e001      	ldi			temp, high(max_T_abs)
+C:000051 37a5      	cpi			Tl, low(max_T_abs)		; Temperature too high? (T_max)
+C:000052 07b0      	cpc			Th, temp
+C:000053 f350      	brlo		f_terminate_error		; Yes, terminate and flag error
+         	
+C:000054 e002      	ldi			temp, high(min_T_abs)
+C:000055 3ca7      	cpi			Tl, low(min_T_abs)		; Temperature too low? (T_min)
+C:000056 07b0      	cpc			Th, temp
+C:000057 f730      	brsh		f_terminate_error		; Yes, terminate and flag error
+         	
+C:000058 314e      	cpi			t_min, max_time_fast
+C:000059 f720      	brsh		f_terminate_error		; timeout (test minutes only)
+         
+C:00005a 9508      	ret
+         ;*******************[ Fast Charge: Reset ]********************************
+         ; Start Fast Charge Cycle
+         ; Reset Charge Parameters
+          fast_charge:
+C:00005b e605      	ldi			temp, 0x65
+C:00005c bf0d      	out			0x3D, temp				; Initialize Stack (emulator only)
+         
+C:00005d ef0f       	ldi			temp,0xFF
+C:00005e bd0d       	out 		OCR1B,temp
+C:00005f e002       	ldi			temp, 0x02
+C:000060 bf09       	out			TIMSK, temp				; Enable TCNT0 overflow interrupt
+C:000061 98c1        	cbi			PORTB, PWM_PIN			; Set Port B levels
+C:000062 9ab9        	sbi			DDRB, PWM_PIN			; Set Port B directions
+C:000063 e050      	ldi			control, 0x00			; No events active
+C:000064 e026      	ldi			tick_cnt, sec_duration		; Tick counter = 0
+C:000065 24ee      	clr			last_t_min
+C:000066 9478      	sei									; global interrupt enable
+C:000067 e051      	ldi			control, NO_PWM			; Set charge control to measure battery voltage
+C:000068 e040      	ldi			t_min, 0x00
+C:000069 e030      	ldi			t_sec, 0x00				; Reset Fast Charge Timer
+C:00006a e000      	ldi			temp, 0x00
+C:00006b bd0e      	out			OCR1A, temp				; Minimum Duty Cycle
+         
+C:00006c dfa3      	rcall		start_PWM
+         	
+         ;*******************[ Fast Charge: Check battery]********************
+          charge_loop:
+C:00006d dfaa      	rcall 		f_measure
+C:00006e dfe1      	rcall		check_temperature	
+         
+         ;*******************[ Fast Charge: Adjust Charge Current ]****************
+         ;  Adjust Charge Voltage and Current
+         		
+C:00006f e607      	ldi			temp,low(I_fast)
+C:000070 e013      	ldi			temp2, high(I_fast)
+C:000071 2fc8      	mov			chargel,Il
+C:000072 2fd9      	mov			chargeh,Ih 
+C:000073 dfcc      	rcall		adj_charge
+         	 
+         ;*******************[ Fast Charge: Terminate Test ]***********************
+          f_terminate_test:
+         
+C:000074 e003      	ldi			temp, high(max_V_fast)
+C:000075 3b6d      	cpi			Vl, low(max_V_fast)
+C:000076 0770      	cpc			Vh, temp					; if( V > V_fast )
+C:000077 f3a8      	brlo		charge_loop					; terminate fast charge
+         
+         ;*******************[ Fast Charge: Constant voltage loop ]***********************
+         
+C:000078 e050      	ldi			control, 0x00				; Clear Charge Control Register
+          fV_voltage_loop:
+C:000079 df9e      	rcall		f_measure			
+         
+C:00007a e405      	ldi			temp,ADC_g_offset_channel	; Select Current offset Channel
+C:00007b dfac      	rcall		convert_average				; Measure offset value
+C:00007c 1985      	sub			Il, av_l					; Subtract offset from measured value
+C:00007d 0996      	sbc			Ih, av_h
+C:00007e f412      	brpl		pos					
+C:00007f 2788      	clr			Il							; Reset if negative value
+C:000080 2799      	clr			Ih	
+          pos:	
+C:000081 eb0d      	ldi			temp,low(max_V_fast)
+C:000082 e013      	ldi			temp2,high(max_V_fast) 		; Load constant V value
+C:000083 2fc6      	mov			chargel,Vl			
+C:000084 2fd7      	mov			chargeh,Vh
+C:000085 dfba      	rcall		adj_charge					; Adjust charge voltage
+         
+         ;*******************[ Fast Charge: Terminate test, constant voltage loop ]***********************
+         
+C:000086 dfc9      	rcall		check_temperature
+         		
+C:000087 e000      	ldi			temp,high(min_I_fast) 		; if( I < I_min )
+C:000088 338a      	cpi			Il,low(min_I_fast)
+C:000089 0790      	cpc			Ih,temp
+C:00008a f770      	brsh		fV_voltage_loop	
+         	
+         ;*******************[ Fast Charge: Terminate ]****************************
+         ;  Terminate Fast Charge Cycle
+         
+C:00008b df87      	rcall		stop_PWM					; Disable PWM Output
+         											; Continue with Trickle Charge
+         ;*******************[ Trickle Charge ]************************************
+         ; Reset Charge Parameters
+C:00008c e051      	ldi			control, NO_PWM				; Set charge control to measure battery voltage
+C:00008d e040      	ldi			t_min, 0x00
+C:00008e bd4e      	out			OCR1A, t_min				; Minimum Duty Cycle
+         
+C:00008f df80      	rcall		start_PWM					; Start PWM
+         
+         ;*******************[ Trickle Charge: Check Temperature ]*****************
+         
+          t_charge_loop:
+C:000090 df87      	rcall 		f_measure
+C:000091 dfbe      	rcall		check_temperature	
+         
+         ;*******************[ Trickle Charge: Adjust Charge Current ]*************
+         ;  Adjust charge Current
+         
+C:000092 e106      	ldi			temp, low(I_trickle)
+C:000093 e010      	ldi			temp2, high(I_trickle)		; Load trickle charge current
+C:000094 2fc8      	mov			chargel,Il
+C:000095 2fd9      	mov			chargeh,Ih			
+C:000096 dfa9      	rcall		adj_charge					; Adjust charge current
+         	
+         ;*******************[ trickle Charge: Terminate Test ]***********************
+          t_terminate_test:
+         
+C:000097 e003      	ldi			temp, high(max_V_trickle)
+C:000098 3b6d      	cpi			Vl, low(max_V_trickle)
+C:000099 0770      	cpc			Vh, temp					; if( V > V_trickle )
+C:00009a f3a8      	brlo		t_charge_loop				; terminate trickle charge
+         
+         ;*******************[ trickle Charge: Constant voltage loop ]***********************
+         
+C:00009b e050      	ldi			control, 0x00				; Clear Charge Control Register
+          tV_voltage_loop:
+C:00009c df7b      	rcall		f_measure		 	
+         
+C:00009d eb0d      	ldi			temp,low(max_V_trickle)
+C:00009e e013      	ldi			temp2,high(max_V_trickle)
+C:00009f 2fc6      	mov			chargel,Vl
+C:0000a0 2fd7      	mov			chargeh,Vh
+C:0000a1 df9e      	rcall		adj_charge	
+         
+         ;*******************[ Trickle Charge: Terminate test, constant voltage loop ]***********************
+         
+          tV_terminate_test:
+         	
+C:0000a2 e000      	ldi			temp,high(min_I_fast) 		; if( I < I_fast )
+C:0000a3 338a      	cpi			Il,low(min_I_fast)
+C:0000a4 0790      	cpc			Ih,temp
+C:0000a5 f7b0      	brsh		tV_voltage_loop	
+         
+          t_terminate:
+C:0000a6 df6c      	rcall		stop_PWM
+C:0000a7 cfff      done:	rjmp 	done		
+         	
+Used memory blocks:
+   code      :  Start = 0x0000, End = 0x0004, Length = 0x0005 (5 words), Overlap=N
+   code      :  Start = 0x0005, End = 0x00A7, Length = 0x00A3 (163 words), Overlap=N
+
+
+Segment usage:
+   Code      :       168 words (336 bytes)
+   Data      :         0 bytes
+   EEPROM    :         0 bytes
+
+Assembly completed with no errors.
