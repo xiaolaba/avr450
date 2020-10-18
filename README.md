@@ -1,12 +1,21 @@
 # avr450
 
-## assembler used is AVRA (open source), the equilvent of AVRASM2 (Atmel's software product)  
-AVRA need device header files (*.inc) to work with. how to obtians those header files? download and install AVR studio 7.0,  
+## assembler used is AVRA (open source),
+the equilvent of AVRASM2 (Atmel's software product). AVRA need device header files (*.inc) to work with. 
+how to obtians those header files? download and install AVR studio 7.0, header files was there,  
 ```
 C:\Program Files (x86)\Atmel\Studio\7.0\packs\atmel\ATtiny_DFP\1.3.229\avrasm  
 ```
+
 copy this folder \avrasm\ to project root, 
-Makefile, include the flagm "ASFLAGS= -I ../../avrasm/inc"
+edit Makefile, include the flagm "ASFLAGS= -I ../avrasm/inc"
+
+or uses AVRA header files, location,
+```
+/usr/share/avra
+```
+edit Makefile accorrdingly, include the flagm "ASFLAGS= -I /usr/share/avra"
+
 
 ## how to assemble the asm files.
 Ubuntu 20.04, install AVRA first and then 'make all' 
@@ -25,13 +34,13 @@ make all
 
 after local change/update code design, how to push to github for storage,  
 ```
-# after changed source code, tell git to add those change  
+# after changed source code, tell git to add those changes,  
 git add *
 
-# commit the change, tell what is about, github will and display
+# commit the change, tell what is about, github will and display,
 git commit -m "descritopn of this change/update"
 
-# this real action, updated file/code will push to github
+# this is real action, updated file/code will push to github,
 git push
 ```
 
