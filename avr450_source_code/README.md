@@ -8,7 +8,14 @@ C:\Program Files (x86)\Atmel\Studio\7.0\packs\atmel\ATtiny_DFP\1.3.229\avrasm
 ```
 
 copy this folder \avrasm\ to project root, 
-edit Makefile, include the flagm "ASFLAGS= -I ../../avrasm/inc"
+edit Makefile, include the flagm "ASFLAGS= -I ../avrasm/inc"
+
+or uses AVRA header files, location,
+```
+/usr/share/avra
+```
+edit Makefile accorrdingly, include the flagm "ASFLAGS= -I /usr/share/avra"
+
 
 ## how to assemble the asm files.
 Ubuntu 20.04, install AVRA first and then 'make all' 

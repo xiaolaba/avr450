@@ -15,7 +15,11 @@ AS=avra
 AVRDUDE=avrdude
 
 #TARGET=main
-ASFLAGS= -I ../avrasm/inc
+
+#ASFLAGS= -I ../avrasm/inc
+
+ASFLAGS= -I /usr/share/avra  # AVRA installed device header files
+
 
 
 # 3 files to be assembled
