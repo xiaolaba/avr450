@@ -2,7 +2,7 @@
 
 ## assembler used is [AVRA (open source)](https://github.com/Ro5bert/avra),
 the equilvent of AVRASM2 (Atmel's software product). AVRA need device header files (*.inc) to work with. 
-how to obtians those header files? download and install AVR studio 7.0, header files was there,  
+how to obtians those header files? download and install [AVR studio 7.0](https://www.microchip.com/mplab/avr-support/atmel-studio-7), header files was there,  
 ```
 C:\Program Files (x86)\Atmel\Studio\7.0\packs\atmel\ATtiny_DFP\1.3.229\avrasm  
 ```
