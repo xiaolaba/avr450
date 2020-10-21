@@ -1,6 +1,6 @@
 # avr450
 
-## assembler used is AVRA (open source),
+## assembler used is [AVRA (open source)](https://github.com/Ro5bert/avra),
 the equilvent of AVRASM2 (Atmel's software product). AVRA need device header files (*.inc) to work with. 
 how to obtians those header files? download and install AVR studio 7.0, header files was there,  
 ```
